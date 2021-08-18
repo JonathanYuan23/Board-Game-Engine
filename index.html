@@ -5,8 +5,33 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>TIC TAC TOE</title>
+        <!-- css -->
+        <link rel="stylesheet" href="styles/reset.css" />
+        <link rel="stylesheet" href="styles/styles.css" />
     </head>
     <body>
-        
+        <div id="overlay">
+            <header>
+                <h1 id="title">Tic-Tac-Toe</h1>
+                <div id="reset-btn" class="btn">reset</div>
+            </header>
+            <main>
+                <div id="gameboard">
+                    <div id="top-left" class="board-cell"></div>
+                    <div id="top-middle" class="board-cell"></div>
+                    <div id="top-right" class="board-cell"></div>
+
+                    <div id="middle-left" class="board-cell"></div>
+                    <div id="middle-middle" class="board-cell"></div>
+                    <div id="middle-right" class="board-cell"></div>
+
+                    <div id="bottom-left" class="board-cell"></div>
+                    <div id="bottom-middle" class="board-cell"></div>
+                    <div id="bottom-right" class="board-cell"></div>
+                </div>
+            </main>
+        </div>
+        <!-- scripts -->
+        <script src="scripts/index.js"></script>
     </body>
 </html>
