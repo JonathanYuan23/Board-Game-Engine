@@ -59,8 +59,11 @@ header {
     margin: 0 auto;
     margin-top: 40px;
     padding: 13px;
+    position: relative;
     width: 400px;
 }
+
+/* 120.333333333333 */
 
 .board-cell {
     background-color: rgba(245, 245, 245, 1);
@@ -68,10 +71,30 @@ header {
     color: rgba(60, 60, 60, 1);
     cursor: pointer;
     display: flex;
-    font-size: 5rem;
-    font-weight: 500;
+    font-size: 3.5rem;
+    font-weight: 700;
 }
 
 .selection {
     margin: auto;
+}
+
+/* STRIKETHROUGHS */
+
+.strikethrough {
+    background-color: rgba(60, 60, 60, 1);
+    border-radius: 10px;
+    position: absolute;
+    width: 0px;
+    height: 10px;
+    transition: width 0.35s ease-in-out;
+}
+
+.strikethrough.active {
+    width: 350px;
+}
+
+#strikethrough-top-row {
+    left: 38px;
+    top: 72px;
 }
