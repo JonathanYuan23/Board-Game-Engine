@@ -130,6 +130,19 @@ let gameboardModule = (function () {
             pubsub.publish('toggleTurn');
         }
         pubsub.publish('toggleAltering');
+        if(gameboard[0][0] != '' && gameboard[1][1] != '' && gameboard[2][2] != '') {
+            const strikethrough = document.querySelector('#strikethrough-back-slash');
+            strikethrough.classList.add('active');
+        }
+        if (gameboard[2][0] != '' && gameboard[1][1] != '' && gameboard[0][2] != '') {
+            const strikethrough = document.querySelector('#strikethrough-forward-slash');
+            strikethrough.classList.add('active');
+        }
+        // if(gameboard[0][0] != '' && gameboard[0][1] != '' && gameboard[0][2] != '') {
+        //     const strikethrough = document.querySelector('#strikethrough-top-row');
+        //     strikethrough.classList.add('active');
+        // }
+
     }
 
     function reset() {

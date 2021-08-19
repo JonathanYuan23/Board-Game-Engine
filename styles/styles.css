@@ -81,20 +81,73 @@ header {
 
 /* STRIKETHROUGHS */
 
-.strikethrough {
+.strikethrough,
+.diagonal-strikethrough {
     background-color: rgba(60, 60, 60, 1);
     border-radius: 10px;
-    position: absolute;
-    width: 0px;
     height: 10px;
+    position: absolute;
     transition: width 0.35s ease-in-out;
+    width: 0px;
 }
 
 .strikethrough.active {
     width: 350px;
 }
 
+.diagonal-strikethrough.active {
+    width: 466px;
+}
+
+/* ROWS */
+
 #strikethrough-top-row {
     left: 38px;
-    top: 72px;
+    top: 70px;
+}
+
+#strikethrough-middle-row {
+    left: 38px;
+    top: 208px;
+}
+
+#strikethrough-bottom-row {
+    bottom: 70px;
+    left: 38px;
+}
+
+/* COLUMNS */
+
+#strikethrough-left-col {
+    left: -100px;
+    top: 208px;
+    transform: rotate(90deg);
+}
+
+#strikethrough-middle-col {
+    left: 38px;
+    top: 208px;
+    transform: rotate(90deg);
+}
+
+#strikethrough-right-col {
+    right: -100px;
+    top: 208px;
+    transform: rotate(90deg);
+}
+
+/* DIAGONALS */
+
+#strikethrough-forward-slash {
+    bottom: 42px;
+    left: 45px;
+    transform: rotate(-45deg);
+    transform-origin: 0px 0px;
+}
+
+#strikethrough-back-slash {
+    left: 52px;
+    top: 45px;
+    transform: rotate(45deg);
+    transform-origin: 0px 0px;
 }
