@@ -155,12 +155,12 @@ let gameboardModule = (function () {
         pubsub.publish('toggleAltering');
     }
 
-    function showModal() {
+    function toggleModal() {
         const msg = winMsgs.find((e) => e.getAttribute('id') === winner);
 
-        overlay.classList.add('active');
-        msg.classList.add('active');
-        playAgainBtn.classList.add('active');
+        overlay.classList.toggle('active');
+        msg.classList.toggle('active');
+        playAgainBtn.classList.toggle('active');
     }
 
     function reset() {
@@ -202,7 +202,7 @@ let gameboardModule = (function () {
             strikethroughs[winIndex].classList.add('active');
 
             winner = player;
-            showModal();
+            toggleModal();
 
             return true;
         }
@@ -211,7 +211,7 @@ let gameboardModule = (function () {
             pubsub.publish('gameOver', 1);
 
             winner = 'draw';
-            showModal();
+            toggleModal();
 
             return true;
         }
@@ -220,12 +220,7 @@ let gameboardModule = (function () {
     }
 
     function playAgain() {
-        const msg = winMsgs.find((e) => e.getAttribute('id') === winner);
-
+        toggleModal();
         pubsub.publish('resetGame');
-
-        overlay.classList.remove('active');
-        msg.classList.remove('active');
-        playAgainBtn.classList.remove('active');
     }
 })();
