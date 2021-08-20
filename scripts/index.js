@@ -2,9 +2,11 @@
 let pubsub = (function () {
     let events = {};
 
-    function subscribe(eventName, func) {
-        events[eventName] = events[eventName] || [];
-        events[eventName].push(func);
+    function subscribe(eventName, ...func) {
+        for (let i = 0; i < func.length; i++) {
+            events[eventName] = events[eventName] || [];
+            events[eventName].push(func[i]);
+        }
     }
 
     function unsubscribe(eventName, func) {
@@ -43,6 +45,15 @@ let gameControlerModule = (function () {
     pubsub.subscribe('resetGame', reset);
     pubsub.subscribe('toggleAltering', toggleAltering);
     pubsub.subscribe('toggleTurn', toggleTurn);
+    pubsub.subscribe('gameOver', toggleGameOver);
+
+    function altering() {
+        return alteringGameboard;
+    }
+
+    function over() {
+        return gameOver;
+    }
 
     function toggleAltering() {
         alteringGameboard = arguments.length > 0 ? arguments[0] : !alteringGameboard;
@@ -53,13 +64,10 @@ let gameControlerModule = (function () {
     }
 
     function toggleGameOver() {
-        gameOver = !gameOver;
+        gameOver = arguments.length > 0 ? arguments[0] : !gameOver;
     }
 
     function check(clickCell) {
-        // give changes time to render
-        if (alteringGameboard) return;
-
         const row = clickCell.row;
         const col = clickCell.col;
         const gameboard = clickCell.gameboard;
@@ -68,7 +76,7 @@ let gameControlerModule = (function () {
             row: row,
             col: col,
             html: whoseTurn ? 'X' : 'O',
-            validTurn: gameboard[row][col] === '' && !gameOver,
+            validTurn: gameboard[row][col] === '',
         };
 
         toggleAltering();
@@ -78,10 +86,18 @@ let gameControlerModule = (function () {
     function reset() {
         toggleAltering(0);
         toggleTurn(1);
+        toggleGameOver(0);
     }
+
+    return {
+        altering,
+        over,
+    };
 })();
 
 let headerModule = (function () {
+    let winner;
+
     // cache DOM
     const resetBtn = document.querySelector('#reset-btn');
 
@@ -89,7 +105,7 @@ let headerModule = (function () {
     resetBtn.addEventListener('click', reset);
 
     function reset() {
-        pubsub.publish('resetGame');
+        if (!gameControlerModule.altering() && !gameControlerModule.over()) pubsub.publish('resetGame');
     }
 })();
 
@@ -102,9 +118,15 @@ let gameboardModule = (function () {
 
     // cache DOM
     const boardCells = Array.from(document.querySelectorAll('.board-cell'));
+    const diagStrikethroughs = Array.from(document.querySelectorAll('.diagonal-strikethrough'));
+    const strikethroughs = [...Array.from(document.querySelectorAll('.strikethrough')), ...diagStrikethroughs];
+    const winMsgs = Array.from(document.querySelectorAll('.win-msg'));
+    const playAgainBtn = document.querySelector('#play-again-btn');
+    const overlay = document.querySelector('#overlay');
 
     // bind events
     boardCells.forEach((cell) => cell.addEventListener('click', cellClicked));
+    playAgainBtn.addEventListener('click', playAgain);
     pubsub.subscribe('changeCell', renderCell);
     pubsub.subscribe('resetGame', reset);
 
@@ -115,8 +137,7 @@ let gameboardModule = (function () {
             col: index % 3,
             gameboard: gameboard,
         };
-
-        pubsub.publish('clickCell', clickCell);
+        if (!gameControlerModule.altering() && !gameControlerModule.over()) pubsub.publish('clickCell', clickCell);
     }
 
     function renderCell(changeCell) {
@@ -127,22 +148,19 @@ let gameboardModule = (function () {
             gameboard[row][col] = html;
             boardCells[index].innerHTML = `<span class="selection">${html}</span>`;
 
+            if (gameOver(html)) return;
+
             pubsub.publish('toggleTurn');
         }
         pubsub.publish('toggleAltering');
-        if(gameboard[0][0] != '' && gameboard[1][1] != '' && gameboard[2][2] != '') {
-            const strikethrough = document.querySelector('#strikethrough-back-slash');
-            strikethrough.classList.add('active');
-        }
-        if (gameboard[2][0] != '' && gameboard[1][1] != '' && gameboard[0][2] != '') {
-            const strikethrough = document.querySelector('#strikethrough-forward-slash');
-            strikethrough.classList.add('active');
-        }
-        // if(gameboard[0][0] != '' && gameboard[0][1] != '' && gameboard[0][2] != '') {
-        //     const strikethrough = document.querySelector('#strikethrough-top-row');
-        //     strikethrough.classList.add('active');
-        // }
+    }
 
+    function showModal() {
+        const msg = winMsgs.find((e) => e.getAttribute('id') === winner);
+
+        overlay.classList.add('active');
+        msg.classList.add('active');
+        playAgainBtn.classList.add('active');
     }
 
     function reset() {
@@ -151,6 +169,63 @@ let gameboardModule = (function () {
             ['', '', ''],
             ['', '', ''],
         ];
-        boardCells.forEach((cell) => cell.innerHTML = '');
+        boardCells.forEach((cell) => (cell.innerHTML = ''));
+        strikethroughs.forEach((strikethrough) => strikethrough.classList.remove('active'));
+    }
+
+    function gameOver(player) {
+        // prefix sum arrays for each row, column and diagonal
+        let rows = [0, 0, 0],
+            cols = [0, 0, 0],
+            diags = [0, 0];
+        let cellsOccupied = 0;
+
+        const equal = (i, j, val) => gameboard[i][j] === val;
+
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (gameboard[i][j] != '') cellsOccupied++;
+
+                cols[j] += equal(i, j, player); // top -> down
+                rows[j] += equal(j, i, player); // left -> right
+            }
+
+            diags[0] += equal(i, i, player); // topleft -> bottom right
+            diags[1] += equal(2 - i, i, player); // bottom left -> top right
+        }
+
+        // it is now possible to join all the psas with index matching to the strikethroughs array
+        const winIndex = [...rows, ...cols, ...diags].findIndex((e) => e === 3);
+
+        if (winIndex >= 0) {
+            pubsub.publish('gameOver', 1);
+            strikethroughs[winIndex].classList.add('active');
+
+            winner = player;
+            showModal();
+
+            return true;
+        }
+
+        if (cellsOccupied === 9) {
+            pubsub.publish('gameOver', 1);
+
+            winner = 'draw';
+            showModal();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    function playAgain() {
+        const msg = winMsgs.find((e) => e.getAttribute('id') === winner);
+
+        pubsub.publish('resetGame');
+
+        overlay.classList.remove('active');
+        msg.classList.remove('active');
+        playAgainBtn.classList.remove('active');
     }
 })();

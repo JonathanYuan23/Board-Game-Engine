@@ -7,18 +7,18 @@ html {
 }
 
 .btn {
+    background-color: rgba(90, 90, 90, 1);
     border: none;
+    border-radius: 3px;
+    color: rgba(240, 240, 240, 1);
     cursor: pointer;
 }
 
 /* OVERLAY */
 
-#overlay {
-    transition: all 1.5s;
-}
-
 #overlay.active {
-    filter: blur(10px);
+    pointer-events: none;
+    animation: overlay-blur 1.2s 2s ease-out forwards;
 }
 
 /* HEADER */
@@ -39,11 +39,8 @@ header {
 }
 
 #reset-btn {
-    background-color: rgba(90, 90, 90, 1);
-    border-radius: 3px;
-    color: rgba(240, 240, 240, 1);
     font-size: 1.25rem;
-    padding: 3px 10px;
+    padding: 5px 10px;
 }
 
 /* MAIN CONTENT */
@@ -57,13 +54,11 @@ header {
     grid-template-rows: repeat(3, 1fr);
     height: 400px;
     margin: 0 auto;
-    margin-top: 40px;
+    margin-top: 35px;
     padding: 13px;
     position: relative;
     width: 400px;
 }
-
-/* 120.333333333333 */
 
 .board-cell {
     background-color: rgba(245, 245, 245, 1);
@@ -76,6 +71,7 @@ header {
 }
 
 .selection {
+    animation: select-fade-in 0.2s ease-in forwards;
     margin: auto;
 }
 
@@ -87,16 +83,27 @@ header {
     border-radius: 10px;
     height: 10px;
     position: absolute;
-    transition: width 0.35s ease-in-out;
+    transition: width 0.35s ease-in-out 0.75s;
     width: 0px;
 }
 
+.diagonal-strikethrough,
+.vertical {
+    transform-origin: 0px 0px;
+}
+
 .strikethrough.active {
-    width: 350px;
+    animation: extend-strikethrough 0.35s 0.75s ease-in-out forwards;
+    /* full length 350px */
 }
 
 .diagonal-strikethrough.active {
-    width: 466px;
+    animation: extend-diagonal-strikethrough 0.35s 0.75s ease-in-out forwards;
+    /* full length 466px */
+}
+
+.vertical {
+    transform: rotate(90deg);
 }
 
 /* ROWS */
@@ -119,21 +126,18 @@ header {
 /* COLUMNS */
 
 #strikethrough-left-col {
-    left: -100px;
-    top: 208px;
-    transform: rotate(90deg);
+    left: 80px;
+    top: 38px;
 }
 
 #strikethrough-middle-col {
-    left: 38px;
-    top: 208px;
-    transform: rotate(90deg);
+    left: 218px;
+    top: 38px;
 }
 
 #strikethrough-right-col {
-    right: -100px;
-    top: 208px;
-    transform: rotate(90deg);
+    left: 356px;
+    top: 38px;
 }
 
 /* DIAGONALS */
@@ -142,12 +146,98 @@ header {
     bottom: 42px;
     left: 45px;
     transform: rotate(-45deg);
-    transform-origin: 0px 0px;
 }
 
 #strikethrough-back-slash {
     left: 52px;
     top: 45px;
     transform: rotate(45deg);
-    transform-origin: 0px 0px;
+}
+
+/* WIN MODAL */
+
+.win-msg {
+    animation: text-expand 1.2s 2s forwards;
+    color: rgba(60, 60, 60, 1);
+    display: none;
+    font-size: 2.5rem;
+    font-weight: 700;
+    left: 50%;
+    position: absolute;
+    top: 45%;
+    transform: translate(-50%);
+}
+
+#play-again-btn {
+    animation: btn-fade-in 1.2s 2s forwards;
+    cursor: pointer;
+    display: none;
+    font-size: 1.25rem;
+    font-weight: 500;
+    left: 50%;
+    top: 55%;
+    padding: 10px 20px;
+    position: absolute;
+    transform: translate(-50%);
+}
+
+.win-msg.active,
+#play-again-btn.active {
+    display: block;
+    opacity: 0;
+}
+
+/* ANIMATIONS */
+
+@keyframes select-fade-in {
+    0% {
+        filter: blur(10px);
+        opacity: 0;
+    }
+    100% {
+        filter: blur(0px);
+        opacity: 1;
+    }
+}
+
+@keyframes extend-strikethrough {
+    100% {
+        width: 350px;
+    }
+}
+
+@keyframes extend-diagonal-strikethrough {
+    100% {
+        width: 466px;
+    }
+}
+
+@keyframes overlay-blur {
+    100% {
+        filter: blur(5px);
+    }
+}
+
+@keyframes text-expand {
+    0% {
+        letter-spacing: -0.5rem;
+    }
+    30% {
+        opacity: 0.8;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes btn-fade-in {
+    0% {
+        letter-spacing: -0.5rem;
+    }
+    30% {
+        opacity: 0.8;
+    }
+    100% {
+        opacity: 1;
+    }
 }
