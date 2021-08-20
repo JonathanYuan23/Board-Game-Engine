@@ -4,3 +4,4 @@ Took inspiration from [2048 game](https://play2048.co/)
 - Pretty proud of myself for figuring out the diagonal and vertical strikethrough animations (set transform origin to any corner)
 ## Todo
 - [ ] implement ai using minimax algorithm
+- [ ] mobile responsive
