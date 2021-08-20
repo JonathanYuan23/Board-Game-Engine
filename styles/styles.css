@@ -12,9 +12,16 @@ html {
     border-radius: 3px;
     color: rgba(240, 240, 240, 1);
     cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 /* OVERLAY */
+
+#overlay {
+    -webkit-user-select: none;
+    user-select: none;
+}
 
 #overlay.active {
     pointer-events: none;
