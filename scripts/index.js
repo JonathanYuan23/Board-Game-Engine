@@ -1,4 +1,3 @@
-// pubsub module pattern
 let pubsub = (function () {
     let events = {};
 
@@ -96,8 +95,6 @@ let gameControlerModule = (function () {
 })();
 
 let headerModule = (function () {
-    let winner;
-
     // cache DOM
     const resetBtn = document.querySelector('#reset-btn');
 
@@ -186,8 +183,8 @@ let gameboardModule = (function () {
             for (let j = 0; j < 3; j++) {
                 if (gameboard[i][j] != '') cellsOccupied++;
 
+                rows[i] += equal(i, j, player); // left -> right
                 cols[j] += equal(i, j, player); // top -> down
-                rows[j] += equal(j, i, player); // left -> right
             }
 
             diags[0] += equal(i, i, player); // topleft -> bottom right
