@@ -1,8 +1,8 @@
 // check for winner
-function eval(board, dim) {
+function evaluate(board, dim) {
     let rows = new Array(dim).fill(0), // row wins
         cols = new Array(dim).fill(0), // column wins
-        diags = [0, 0]; // top left - bottom right, bottom left - top right respectively
+        diags = new Array(2).fill(0); // top left - bottom right, bottom left - top right respectively
 
     const equal = (i, j, val) => val && board[i][j] === val;
 
@@ -16,28 +16,27 @@ function eval(board, dim) {
         diags[1] += equal(dim - 1 - i, i, board[dim - 1][0]);
     }
 
-    for (let i = 0; i < dim; i++) {
-        if (rows[i] === dim) return board[i][0];
+    const i = rows.indexOf(dim);
+    const j = cols.indexOf(dim);
 
-        if (cols[i] === dim) return board[0][i];
-    }
+    if (i !== -1) return board[i][0];
+    if (j !== -1) return board[0][j];
 
     if (diags[0] === dim) return board[0][0];
-
     if (diags[1] === dim) return board[dim - 1][0];
 
     return 0;
 }
 
 let minimax = (function () {
-    let bestMove;
+    let bestMoves = [];
 
     function nextMove() {
-        return bestMove;
+        return bestMoves[Math.floor(Math.random() * bestMoves.length)];
     }
 
     function search(board, dim, depth, alpha, beta, maximizingPlayer) {
-        const boardVal = eval(board, dim);
+        const boardVal = evaluate(board, dim);
 
         if (!depth || boardVal) return boardVal;
 
@@ -52,23 +51,21 @@ let minimax = (function () {
 
                     let val = search(board, dim, depth - 1, alpha, beta, !maximizingPlayer);
 
-                    // maximizingPlayer
-                    //     ? ((alpha = Math.max(alpha, val)), (limit = Math.max(limit, val)))
-                    //     : ((beta = Math.min(beta, val)), (limit = Math.min(limit, val)));
+                    if (val === limit) bestMoves.push({ targetX: i, targetY: j });
 
                     if (maximizingPlayer) {
                         alpha = Math.max(alpha, val);
 
                         if (val > limit) {
                             limit = val;
-                            bestMove = { targetX: i, targetY: j };
+                            bestMoves = [{ targetX: i, targetY: j }];
                         }
                     } else {
                         beta = Math.min(beta, val);
 
                         if (val < limit) {
                             limit = val;
-                            bestMove = { targetX: i, targetY: j };
+                            bestMoves = [{ targetX: i, targetY: j }];
                         }
                     }
 

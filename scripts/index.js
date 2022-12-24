@@ -34,84 +34,66 @@ let pubsub = (function () {
     };
 })();
 
+const Player = (symbol, value) => ({ symbol, value });
+
 let gameControlerModule = (function () {
-    let whoseTurn = 1;
-    let alteringGameboard = 0;
-    let gameOver = 0;
+    const players = [Player('X', 1), Player('O', -1)];
+    let turn = 0;
+    let altering = 0;
+    let over = 0;
 
-    // bind events
-    pubsub.subscribe('clickCell', check);
-    pubsub.subscribe('resetGame', reset);
-    pubsub.subscribe('toggleAltering', toggleAltering);
-    pubsub.subscribe('toggleTurn', toggleTurn);
-    pubsub.subscribe('gameOver', toggleGameOver);
-
-    function altering() {
-        return alteringGameboard;
-    }
-
-    function over() {
-        return gameOver;
-    }
-
-    function toggleAltering() {
-        alteringGameboard = arguments.length > 0 ? arguments[0] : !alteringGameboard;
-    }
-
-    function toggleTurn() {
-        whoseTurn = arguments.length > 0 ? arguments[0] : !whoseTurn;
-    }
-
-    function toggleGameOver() {
-        gameOver = arguments.length > 0 ? arguments[0] : !gameOver;
-    }
-
-    function check(clickCell) {
-        const row = clickCell.row;
-        const col = clickCell.col;
-        const gameboard = clickCell.gameboard;
-
-        const changeCell = {
-            row: row,
-            col: col,
-            html: whoseTurn ? 'X' : 'O',
-            validTurn: gameboard[row][col] === '',
-        };
-
-        toggleAltering();
-        pubsub.publish('changeCell', changeCell);
-    }
-
-    function reset() {
-        toggleAltering(0);
-        toggleTurn(1);
-        toggleGameOver(0);
-    }
-
-    return {
-        altering,
-        over,
-    };
-})();
-
-let headerModule = (function () {
     // cache DOM
     const resetBtn = document.querySelector('#reset-btn');
 
     // bind events
-    resetBtn.addEventListener('click', reset);
+    resetBtn.addEventListener('click', () => {
+        if (!over) pubsub.publish('resetGame');
+    });
+    pubsub.subscribe('clickCell', check);
+    pubsub.subscribe('resetGame', resetGame);
+    pubsub.subscribe('toggleAltering', toggleAltering);
+    pubsub.subscribe('toggleTurn', toggleTurn);
+    pubsub.subscribe('over', toggleOver);
 
-    function reset() {
-        if (!gameControlerModule.altering() && !gameControlerModule.over()) pubsub.publish('resetGame');
+    function toggleAltering() {
+        altering = arguments.length > 0 ? arguments[0] : !altering;
+    }
+
+    function toggleTurn() {
+        turn = arguments.length > 0 ? arguments[0] : +!turn; // + is necessary for casting to int
+    }
+
+    function toggleOver() {
+        over = arguments.length > 0 ? arguments[0] : !over;
+    }
+
+    function check(cell, board) {
+        const r = cell.r;
+        const c = cell.c;
+
+        if (altering || over || board[r][c] !== 0) return;
+
+        const newCell = {
+            r,
+            c,
+            player: players[turn],
+        };
+
+        toggleAltering();
+        pubsub.publish('changeCell', newCell);
+    }
+
+    function resetGame() {
+        toggleAltering(0);
+        toggleTurn(0);
+        toggleOver(0);
     }
 })();
 
-let gameboardModule = (function () {
-    let gameboard = [
-        ['', '', ''],
-        ['', '', ''],
-        ['', '', ''],
-    ];
+let gameboard = (function () {
+    let board = [new Array(3).fill(0), new Array(3).fill(0), new Array(3).fill(0)];
+
+    let result;
 
     // cache DOM
     const boardCells = Array.from(document.querySelectorAll('.board-cell'));
@@ -128,32 +110,28 @@ let gameboardModule = (function () {
     pubsub.subscribe('resetGame', reset);
 
     function cellClicked(event) {
-        const index = boardCells.indexOf(event.currentTarget);
-        const clickCell = {
-            row: Math.floor(index / 3),
-            col: index % 3,
-            gameboard: gameboard,
+        const i = boardCells.indexOf(event.currentTarget);
+        const cell = {
+            r: Math.floor(i / 3),
+            c: i % 3,
         };
-        if (!gameControlerModule.altering() && !gameControlerModule.over()) pubsub.publish('clickCell', clickCell);
+        pubsub.publish('clickCell', cell, board);
     }
 
-    function renderCell(changeCell) {
-        if (changeCell.validTurn) {
-            const { row, col, html } = changeCell;
-            const index = row * 3 + col;
+    function renderCell(newCell) {
+        const { r, c, player } = newCell;
+        const i = r * 3 + c;
+        board[r][c] = player.value;
+        boardCells[i].innerHTML = `<span class="selection">${player.symbol}</span>`;
 
-            gameboard[row][col] = html;
-            boardCells[index].innerHTML = `<span class="selection">${html}</span>`;
-
-            if (gameOver(html)) return;
-
-            pubsub.publish('toggleTurn');
-        }
+        pubsub.publish('toggleTurn');
         pubsub.publish('toggleAltering');
+
+        if (over(player.value, player.symbol)) return;
     }
 
     function toggleModal() {
-        const msg = winMsgs.find((e) => e.getAttribute('id') === winner);
+        const msg = winMsgs.find((e) => e.getAttribute('id') === result);
 
         overlay.classList.toggle('active');
         msg.classList.toggle('active');
@@ -161,53 +139,48 @@ let gameboardModule = (function () {
     }
 
     function reset() {
-        gameboard = [
-            ['', '', ''],
-            ['', '', ''],
-            ['', '', ''],
-        ];
+        board = [new Array(3).fill(0), new Array(3).fill(0), new Array(3).fill(0)];
         boardCells.forEach((cell) => (cell.innerHTML = ''));
         strikethroughs.forEach((strikethrough) => strikethrough.classList.remove('active'));
     }
 
-    function gameOver(player) {
-        // prefix sum arrays for each row, column and diagonal
-        let rows = [0, 0, 0],
-            cols = [0, 0, 0],
-            diags = [0, 0];
-        let cellsOccupied = 0;
+    function over(value, symbol) {
+        let rows = new Array(3).fill(0),
+            cols = new Array(3).fill(0),
+            diags = new Array(2).fill(0);
+        let moves = 0;
 
-        const equal = (i, j, val) => gameboard[i][j] === val;
+        const equal = (i, j, val) => board[i][j] === val;
 
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
-                if (gameboard[i][j] != '') cellsOccupied++;
+                if (board[i][j] !== 0) moves++;
 
-                rows[i] += equal(i, j, player); // left -> right
-                cols[j] += equal(i, j, player); // top -> down
+                rows[i] += equal(i, j, value);
+                cols[j] += equal(i, j, value);
             }
 
-            diags[0] += equal(i, i, player); // topleft -> bottom right
-            diags[1] += equal(2 - i, i, player); // bottom left -> top right
+            diags[0] += equal(i, i, value);
+            diags[1] += equal(2 - i, i, value);
         }
 
         // it is now possible to join all the psas with index matching to the strikethroughs array
-        const winIndex = [...rows, ...cols, ...diags].findIndex((e) => e === 3);
+        const i = [...rows, ...cols, ...diags].findIndex((e) => e === 3);
 
-        if (winIndex >= 0) {
-            pubsub.publish('gameOver', 1);
-            strikethroughs[winIndex].classList.add('active');
+        if (i !== -1) {
+            pubsub.publish('over', 1);
+            strikethroughs[i].classList.add('active');
 
-            winner = player;
+            result = symbol;
             toggleModal();
 
             return true;
         }
 
-        if (cellsOccupied === 9) {
-            pubsub.publish('gameOver', 1);
+        if (moves === 9) {
+            pubsub.publish('over', 1);
 
-            winner = 'draw';
+            result = 'draw';
             toggleModal();
 
             return true;

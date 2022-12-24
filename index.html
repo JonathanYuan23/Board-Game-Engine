@@ -11,8 +11,14 @@
     </head>
     <body>
         <header>
-            <h1 id="title">Tic-Tac-Toe</h1>
-            <div id="reset-btn" class="btn">reset</div>
+            <form action="">
+                <select name="difficulties" id="difficulties">
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                </select>
+            </form>
+            <btn id="reset-btn" class="btn">Reset</btn>
         </header>
         <main>
             <div id="overlay">
@@ -51,6 +57,6 @@
             </div>
         </main>
         <!-- scripts -->
-        <script src="scripts/index.js"></script>
+        <script type="module" src="scripts/index.js"></script>
     </body>
 </html>
