@@ -1,3 +1,5 @@
+import getMove from './minimax.mjs';
+
 let pubsub = (function () {
     let events = {};
 
@@ -35,36 +37,76 @@ let pubsub = (function () {
 })();
 
 const Player = (symbol, value) => ({ symbol, value });
+const Cell = (r, c, moves, player) => ({ r, c, moves, player });
+
+const _sleep = (ms) => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+};
 
 let gameControlerModule = (function () {
     const players = [Player('X', 1), Player('O', -1)];
+    const difficultyMap = {
+        Easy: 1,
+        Normal: 2,
+        Hard: 3,
+    };
+
+    let moves = 0;
     let turn = 0;
     let altering = 0;
     let over = 0;
 
     // cache DOM
     const resetBtn = document.querySelector('#reset-btn');
+    const difficultyForm = document.querySelector('#difficulty-form');
+    const difficultySelect = document.querySelector('#difficulty');
 
     // bind events
     resetBtn.addEventListener('click', () => {
-        if (!over) pubsub.publish('resetGame');
+        if (!altering && !over) pubsub.publish('resetGame');
     });
+    difficultyForm.addEventListener('change', () => {
+        if (!altering && !over) pubsub.publish('resetGame');
+    });
+
     pubsub.subscribe('clickCell', check);
     pubsub.subscribe('resetGame', resetGame);
-    pubsub.subscribe('toggleAltering', toggleAltering);
-    pubsub.subscribe('toggleTurn', toggleTurn);
-    pubsub.subscribe('over', toggleOver);
+    pubsub.subscribe('setAltering', setAltering);
+    pubsub.subscribe('setTurn', setTurn);
+    pubsub.subscribe('generateMove', generateMove);
+    pubsub.subscribe('over', setOver);
 
-    function toggleAltering() {
+    function setAltering() {
         altering = arguments.length > 0 ? arguments[0] : !altering;
     }
 
-    function toggleTurn() {
-        turn = arguments.length > 0 ? arguments[0] : +!turn; // + is necessary for casting to int
+    function setMoves() {
+        moves = arguments.length > 0 ? arguments[0] : 0;
     }
 
-    function toggleOver() {
+    function setTurn() {
+        turn = arguments.length > 0 ? arguments[0] : +!turn; // + is necessary for casting to int
+
+        if (turn) pubsub.publish('computerMove');
+    }
+
+    function setOver() {
         over = arguments.length > 0 ? arguments[0] : !over;
+    }
+
+    async function generateMove(board) {
+        setAltering(); // block user from making new move
+
+        const difficulty = difficultyMap[difficultySelect.value];
+        const { targetX: r, targetY: c } = getMove(board, 3, 9 - moves, difficulty, 0);
+
+        const newCell = Cell(r, c, moves, players[turn]);
+
+        await _sleep(500 + Math.random() * 500);
+
+        moves++;
+
+        pubsub.publish('changeCell', newCell);
     }
 
     function check(cell, board) {
@@ -73,20 +115,18 @@ let gameControlerModule = (function () {
 
         if (altering || over || board[r][c] !== 0) return;
 
-        const newCell = {
-            r,
-            c,
-            player: players[turn],
-        };
+        moves++;
 
-        toggleAltering();
+        const newCell = Cell(r, c, moves, players[turn]);
+
+        setAltering();
         pubsub.publish('changeCell', newCell);
     }
 
     function resetGame() {
-        toggleAltering(0);
-        toggleTurn(0);
-        toggleOver(0);
+        setTurn(0);
+        setOver(0);
+        setMoves(0);
     }
 })();
 
@@ -108,6 +148,7 @@ let gameboard = (function () {
     playAgainBtn.addEventListener('click', playAgain);
     pubsub.subscribe('changeCell', renderCell);
     pubsub.subscribe('resetGame', reset);
+    pubsub.subscribe('computerMove', () => pubsub.publish('generateMove', board));
 
     function cellClicked(event) {
         const i = boardCells.indexOf(event.currentTarget);
@@ -119,15 +160,15 @@ let gameboard = (function () {
     }
 
     function renderCell(newCell) {
-        const { r, c, player } = newCell;
+        const { r, c, moves, player } = newCell;
         const i = r * 3 + c;
         board[r][c] = player.value;
         boardCells[i].innerHTML = `<span class="selection">${player.symbol}</span>`;
 
-        pubsub.publish('toggleTurn');
-        pubsub.publish('toggleAltering');
+        if (over(player.value, player.symbol, moves)) return;
 
-        if (over(player.value, player.symbol)) return;
+        pubsub.publish('setAltering');
+        pubsub.publish('setTurn');
     }
 
     function toggleModal() {
@@ -144,18 +185,15 @@ let gameboard = (function () {
         strikethroughs.forEach((strikethrough) => strikethrough.classList.remove('active'));
     }
 
-    function over(value, symbol) {
+    function over(value, symbol, moves) {
         let rows = new Array(3).fill(0),
             cols = new Array(3).fill(0),
             diags = new Array(2).fill(0);
-        let moves = 0;
 
         const equal = (i, j, val) => board[i][j] === val;
 
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
-                if (board[i][j] !== 0) moves++;
-
                 rows[i] += equal(i, j, value);
                 cols[j] += equal(i, j, value);
             }
@@ -164,11 +202,12 @@ let gameboard = (function () {
             diags[1] += equal(2 - i, i, value);
         }
 
-        // it is now possible to join all the psas with index matching to the strikethroughs array
         const i = [...rows, ...cols, ...diags].findIndex((e) => e === 3);
 
         if (i !== -1) {
             pubsub.publish('over', 1);
+            pubsub.publish('setAltering', 0);
+
             strikethroughs[i].classList.add('active');
 
             result = symbol;
@@ -179,6 +218,7 @@ let gameboard = (function () {
 
         if (moves === 9) {
             pubsub.publish('over', 1);
+            pubsub.publish('setAltering', 0);
 
             result = 'draw';
             toggleModal();
