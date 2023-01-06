@@ -1,92 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=Montserrat:wght@300;400;500;700&display=swap');
 
-/* GLOBAL */
+@layer base {
+    html {
+        @apply font-sans;
+    }
 
-html {
-    font-family: 'Inter', 'Montserrat', sans-serif;
+    header {
+        @apply flex items-start justify-between;
+        margin: 0 auto;
+        margin-top: 80px;
+        width: 400px;
+    }
 }
 
-.btn {
-    background-color: rgba(90, 90, 90, 1);
-    border: none;
-    border-radius: 3px;
-    color: rgba(240, 240, 240, 1);
-    cursor: pointer;
-    -webkit-user-select: none;
-    user-select: none;
+@layer components {
+    .btn {
+        @apply bg-secondary	border-none rounded text-primary cursor-pointer select-none;
+    }
+
+    .board-cell {
+        @apply flex bg-primary rounded text-tertiary cursor-pointer text-[3.5rem] font-bold;
+    }
+
+    .strikethrough {
+        @apply bg-tertiary rounded-lg h-2.5 absolute w-0;
+        transition: width 0.35s ease-in-out 0.75s;
+    }
 }
 
-/* OVERLAY */
-
-#overlay {
-    -webkit-user-select: none;
-    user-select: none;
-}
+/* DYNAMIC CSS CLASSES */
 
 #overlay.active {
     pointer-events: none;
     animation: overlay-blur 1.2s 2s ease-out forwards;
-}
-
-/* HEADER */
-
-header {
-    align-items: flex-start;
-    display: flex;
-    justify-content: space-between;
-    margin: 0 auto;
-    margin-top: 80px;
-    width: 400px;
-}
-
-#difficulty {
-    color: rgba(90, 90, 90, 1);
-    font-family: 'Inter', 'Montserrat', sans-serif;
-    font-size: 1rem;
-    font-weight: 500;
-    text-align: center;
-    height: 35px;
-    width: 115px;
-    outline: none;
-    border: none;
-    border-bottom: 2px solid rgba(90, 90, 90, 1);
-    cursor: pointer;
-    -webkit-user-select: none;
-    user-select: none;
-}
-
-#reset-btn {
-    font-size: 0.9rem;
-    font-weight: 700;
-    padding: 0 18px;
-    line-height: 35px;
-}
-
-/* MAIN CONTENT */
-
-#gameboard {
-    background-color: rgba(90, 90, 90, 1);
-    border-radius: 7px;
-    display: grid;
-    gap: 13px;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    height: 400px;
-    margin: 0 auto;
-    margin-top: 35px;
-    padding: 13px;
-    position: relative;
-    width: 400px;
-}
-
-.board-cell {
-    background-color: rgba(245, 245, 245, 1);
-    border-radius: 3px;
-    color: rgba(60, 60, 60, 1);
-    cursor: pointer;
-    display: flex;
-    font-size: 3.5rem;
-    font-weight: 700;
 }
 
 .selection {
@@ -94,116 +44,30 @@ header {
     margin: auto;
 }
 
-/* STRIKETHROUGHS */
-
-.strikethrough,
-.diagonal-strikethrough {
-    background-color: rgba(60, 60, 60, 1);
-    border-radius: 10px;
-    height: 10px;
-    position: absolute;
-    transition: width 0.35s ease-in-out 0.75s;
-    width: 0px;
-}
-
-.diagonal-strikethrough,
-.vertical {
-    transform-origin: 0px 0px;
-}
-
 .strikethrough.active {
     animation: extend-strikethrough 0.35s 0.75s ease-in-out forwards;
     /* full length 350px */
 }
 
-.diagonal-strikethrough.active {
+.diagonal.active {
     animation: extend-diagonal-strikethrough 0.35s 0.75s ease-in-out forwards;
     /* full length 466px */
-}
-
-.vertical {
-    transform: rotate(90deg);
-}
-
-/* ROWS */
-
-#strikethrough-top-row {
-    left: 38px;
-    top: 70px;
-}
-
-#strikethrough-middle-row {
-    left: 38px;
-    top: 208px;
-}
-
-#strikethrough-bottom-row {
-    bottom: 70px;
-    left: 38px;
-}
-
-/* COLUMNS */
-
-#strikethrough-left-col {
-    left: 80px;
-    top: 38px;
-}
-
-#strikethrough-middle-col {
-    left: 218px;
-    top: 38px;
-}
-
-#strikethrough-right-col {
-    left: 356px;
-    top: 38px;
-}
-
-/* DIAGONALS */
-
-#strikethrough-forward-slash {
-    bottom: 42px;
-    left: 45px;
-    transform: rotate(-45deg);
-}
-
-#strikethrough-back-slash {
-    left: 52px;
-    top: 45px;
-    transform: rotate(45deg);
-}
-
-/* WIN MODAL */
-
-.win-msg {
-    animation: text-expand 1.2s 2s forwards;
-    color: rgba(60, 60, 60, 1);
-    display: none;
-    font-size: 2.5rem;
-    font-weight: 700;
-    left: 50%;
-    position: absolute;
-    top: 45%;
-    transform: translate(-50%);
-}
-
-#play-again-btn {
-    animation: btn-fade-in 1.2s 2s forwards;
-    cursor: pointer;
-    display: none;
-    font-size: 1.25rem;
-    font-weight: 500;
-    left: 50%;
-    top: 55%;
-    padding: 10px 20px;
-    position: absolute;
-    transform: translate(-50%);
 }
 
 .win-msg.active,
 #play-again-btn.active {
     display: block;
     opacity: 0;
+}
+
+/* WIN MODAL */
+
+.win-msg {
+    animation: text-expand 1.2s 2s forwards;
+}
+
+#play-again-btn {
+    animation: btn-fade-in 1.2s 2s forwards;
 }
 
 /* ANIMATIONS */

@@ -7,22 +7,29 @@
         <title>Tic-Tac-Toe</title>
         <!-- css -->
         <link rel="stylesheet" href="styles/reset.css" />
-        <link rel="stylesheet" href="styles/styles.css" />
+        <link rel="stylesheet" href="styles/output.css" />
     </head>
     <body>
         <header>
             <form action="" id="difficulty-form">
-                <select name="difficulty" id="difficulty">
+                <select
+                    name="difficulty"
+                    id="difficulty"
+                    class="font-sans text-secondary text-base text-center font-medium h-[35px] w-[115px] outline-none border-x-0 border-t-0 border-b-2 border-solid border-secondary cursor-pointer select-none"
+                >
                     <option value="Easy">Easy</option>
                     <option value="Normal">Normal</option>
                     <option value="Hard">Hard</option>
                 </select>
             </form>
-            <btn id="reset-btn" class="btn">Reset</btn>
+            <btn id="reset-btn" class="btn text-[0.9rem] font-bold py-0 px-[18px] leading-9">Reset</btn>
         </header>
         <main>
-            <div id="overlay">
-                <div id="gameboard">
+            <div id="overlay" class="select-none">
+                <div
+                    id="gameboard"
+                    class="bg-secondary rounded-md grid gap-[13px] grid-cols-3 grid-rows-3 height h-[400px] w-[400px] mt-9 mb-0 mx-auto p-[13px] relative"
+                >
                     <!-- board cells -->
                     <div id="top-left" class="board-cell"></div>
                     <div id="top-middle" class="board-cell"></div>
@@ -37,23 +44,58 @@
                     <div id="bottom-right" class="board-cell"></div>
 
                     <!-- game winner strikethroughs -->
-                    <div id="strikethrough-top-row" class="strikethrough"></div>
-                    <div id="strikethrough-middle-row" class="strikethrough"></div>
-                    <div id="strikethrough-bottom-row" class="strikethrough"></div>
+                    <div id="strikethrough-top-row" class="strikethrough left-[38px] top-[70px]"></div>
+                    <div id="strikethrough-middle-row" class="strikethrough left-[38px] top-[208px]"></div>
+                    <div id="strikethrough-bottom-row" class="strikethrough left-[38px] bottom-[70px]"></div>
 
-                    <div id="strikethrough-left-col" class="strikethrough vertical"></div>
-                    <div id="strikethrough-middle-col" class="strikethrough vertical"></div>
-                    <div id="strikethrough-right-col" class="strikethrough vertical"></div>
+                    <div
+                        id="strikethrough-left-col"
+                        class="strikethrough origin-top-left rotate-90 left-[80px] top-[38px]"
+                    ></div>
+                    <div
+                        id="strikethrough-middle-col"
+                        class="strikethrough origin-top-left rotate-90 left-[218px] top-[38px]"
+                    ></div>
+                    <div
+                        id="strikethrough-right-col"
+                        class="strikethrough origin-top-left rotate-90 left-[356px] top-[38px]"
+                    ></div>
 
-                    <div id="strikethrough-back-slash" class="diagonal-strikethrough"></div>
-                    <div id="strikethrough-forward-slash" class="diagonal-strikethrough"></div>
+                    <div
+                        id="strikethrough-back-slash"
+                        class="strikethrough diagonal origin-top-left rotate-45 left-[52px] top-[45px]"
+                    ></div>
+                    <div
+                        id="strikethrough-forward-slash"
+                        class="strikethrough diagonal origin-top-left rotate-[-45deg] left-[45px] bottom-[42px]"
+                    ></div>
                 </div>
             </div>
             <div id="win">
-                <h2 id="X" class="win-msg">Winner is X</h2>
-                <h2 id="O" class="win-msg">Winner is O</h2>
-                <h2 id="draw" class="win-msg">It's a draw</h2>
-                <div id="play-again-btn" class="btn">Play again</div>
+                <h2
+                    id="X"
+                    class="win-msg text-tertiary hidden text-[2.5rem] font-bold left-1/2 top-[45%] absolute translate-x-[-50%] translate-y-[-50%]"
+                >
+                    Winner is X
+                </h2>
+                <h2
+                    id="O"
+                    class="win-msg text-tertiary hidden text-[2.5rem] font-bold left-1/2 top-[45%] absolute translate-x-[-50%] translate-y-[-50%]"
+                >
+                    Winner is O
+                </h2>
+                <h2
+                    id="draw"
+                    class="win-msg text-tertiary hidden text-[2.5rem] font-bold left-1/2 top-[45%] absolute translate-x-[-50%] translate-y-[-50%]"
+                >
+                    It's a draw
+                </h2>
+                <div
+                    id="play-again-btn"
+                    class="btn cursor-pointer hidden text-xl font-medium left-1/2 top-[55%] py-2.5 px-5 absolute translate-x-[-50%] translate-y-[-50%]"
+                >
+                    Play again
+                </div>
             </div>
         </main>
         <!-- scripts -->
