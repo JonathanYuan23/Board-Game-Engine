@@ -1,6 +1,6 @@
 # Tic-tac-toe AI
 
-Tic-tac-toe AI using Minimax algorithm with AB pruning. My Heuristic evaluation logic is from an [article by Dong Xiang](https://www.codeproject.com/Articles/43622/Solve-Tic-Tac-Toe-with-the-MiniMax-algorithm).
+Tic-tac-toe AI using Minimax algorithm with AB pruning. My Heuristic evaluation logic is largely inspired by an [article by Dong Xiang](https://www.codeproject.com/Articles/43622/Solve-Tic-Tac-Toe-with-the-MiniMax-algorithm).
 
 ## Implementation
 
